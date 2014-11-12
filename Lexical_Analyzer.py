@@ -15,7 +15,8 @@ token_codes = {
     'MULT_OP': 23,
     'DIV_OP': 24,
     'LEFT_PAREN': 25,
-    'RIGHT_PAREN': 26
+    'RIGHT_PAREN': 26,
+    'EOF': -1
 }
 token_lookup = {
     '(': 'LEFT_PAREN',
@@ -25,49 +26,81 @@ token_lookup = {
     '*': 'MULT_OP',
     '/': 'DIV_OP'
 }
+
 character_classes = {
     'LETTER': 0,
     'DIGIT': 1,
     'UNKNOWN': 99
 }
-lexeme = []
-next_char = None
-input_string = "1 + 2 * 3 * (4 + 5)"
-input_list = []
-char_class = None
 
-for char in input_string:
-    input_list.append(char)
+input_string = "(sum + 47) / total"
+input_list = []
 
 def lookup(char):
+    global next_token
     add_char()
-    nextToken = token_lookup[char]
+    token_lookup.setdefault(char, 'DEFAULT')
+    next_token = token_lookup[char]
+    return next_token
 
 
 def add_char():
     global lexeme
-    if lex_len <= 98:
-        lexeme.append(next_char)
-    else:
-        print("Error - Lexeme is too long.")
-    pass
+    lexeme += next_char
 
 
 def get_char():
     global next_char, char_class
-    next_char = input_list.pop()
-    if char.isalpha():
-        char_class = 'LETTER'
-    elif next_char.isdigit():
-        char_class = 'DIGIT'
+    if input_list:
+        next_char = input_list.pop(0)
+        if next_char.isalpha():
+            char_class = 'LETTER'
+        elif next_char.isdigit():
+            char_class = 'DIGIT'
+        else:
+            char_class = 'UNKNOWN'
     else:
-        char_class = 'UNKNOWN'
+        char_class = 'EOF'
 
 
 def get_non_blank():
-    pass
+    while next_char == " ":
+        get_char()
 
 
 def lex():
-    pass
+    global next_token, lex_len, lexeme
+    lexeme = ""
+    get_non_blank()
+    if char_class == 'LETTER':
+        add_char()
+        get_char()
+        while (char_class == 'LETTER') or (char_class == 'DIGIT'):
+            add_char()
+            get_char()
+        next_token = 'IDENT'
+    elif char_class == 'DIGIT':
+        add_char()
+        get_char()
+        while char_class == 'DIGIT':
+            add_char()
+            get_char()
+        next_token = 'INT_LIT'
+    elif char_class == 'UNKNOWN':
+        lookup(next_char)
+        get_char()
+    elif char_class == 'EOF':
+        next_token = 'EOF'
+        lexeme = 'EOF'
+    print("Next token is: " + str(token_codes[next_token]) + ", Next Lexeme is " + lexeme)
+    if not input_list:
+        print("Next token is: " + "-1" + ", Next Lexeme is " + "EOF")
+    return next_token
 
+
+if __name__ == '__main__':
+    for char in input_string:
+        input_list.append(char)
+    get_char()
+    while input_list:
+        lex()
