@@ -1,5 +1,6 @@
 user_input = "hello /*world*/."
 char_list = []
+
 state = "start"
 comment = ""
 for char in user_input:
